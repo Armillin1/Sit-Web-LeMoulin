@@ -41,6 +41,13 @@
     .coming-soon span{color:#1a9e08}
     footer{border-top:1px solid #1a1f1a;padding:2rem 1.5rem;text-align:center;color:#555;font-size:0.8rem}
     footer span{color:#1a9e08}
+    
+.rank-toggle{cursor:pointer;justify-content:space-between}
+.rank-arrow{color:#2dcc0e;font-size:1.2rem;transition:transform .25s ease}
+.rank-card.open .rank-arrow{transform:rotate(180deg)}
+.rank-body{display:none}
+.rank-card.open .rank-body{display:block}
+
 
     /* ADMIN */
     #admin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;overflow-y:auto}
@@ -143,7 +150,7 @@
   </div>
 
   <footer>
-    <span>LeMoulin</span> — Une communauté créé et géré par Armillin. Non affilié
+    <span>EVOLUCRAFT</span> — Un serveur créé et géré par Rivrs. Non affilié à Mojang AB.
   </footer>
 </div>
 
@@ -366,12 +373,15 @@ function renderPublic() {
   el.innerHTML = ranks.map(r => `
     <div class="rank-card">
       ${r.img ? `<div style="width:100%;height:160px;overflow:hidden;border-bottom:1px solid #1a9e0833"><img src="${r.img}" style="width:100%;height:100%;object-fit:cover;object-position:center" /></div>` : ''}
-      <div class="rank-header">
-        <div class="rank-badge">${r.icon}</div>
-        <div>
-          <div class="rank-name">${r.name}</div>
-          <div class="rank-flavor">${r.desc}</div>
+      <div class="rank-header rank-toggle" onclick="toggleRank(this.parentElement)">
+        <div style="display:flex;align-items:center;gap:1rem">
+          <div class="rank-badge">${r.icon}</div>
+          <div>
+            <div class="rank-name">${r.name}</div>
+            <div class="rank-flavor">${r.desc}</div>
+          </div>
         </div>
+        <div class="rank-arrow">▼</div>
       </div>
       <div class="rank-body">
         ${r.categories.map(cat => `
@@ -611,6 +621,11 @@ function showToast(msg, err) {
   t.style.background = err ? '#cc3333' : '#1a9e08';
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+
+function toggleRank(card){
+  card.classList.toggle('open');
 }
 
 loadRanks();
