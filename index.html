@@ -68,6 +68,11 @@
     .rank-row-name{font-weight:700;color:#e8e8e8;font-size:0.95rem;flex:1}
     .rank-row-count{font-size:0.75rem;color:#7aad6a;background:#1a9e0815;border:1px solid #1a9e0825;border-radius:6px;padding:2px 8px}
     .rank-row-actions{display:flex;gap:0.5rem}
+
+.rank-row{cursor:grab}
+.rank-row.dragging{opacity:.45}
+.rank-row.drag-over{border-color:#2dcc0e;box-shadow:0 0 0 2px #2dcc0e40}
+
     .btn{padding:0.4rem 0.85rem;border-radius:7px;font-size:0.78rem;font-weight:600;cursor:pointer;border:1px solid;transition:all 0.15s;font-family:inherit}
     .btn-green{background:#1a9e0820;border-color:#1a9e0860;color:#2dcc0e}
     .btn-green:hover{background:#1a9e0835}
@@ -446,16 +451,19 @@ function renderList() {
   if (!ranks.length) { el.innerHTML = '<div class="empty-state"><span>Aucun rang créé.</span><br>Rendez-vous dans l\'onglet "Créer un rang".</div>'; return; }
   el.innerHTML = ranks.map(r => {
     const total = r.categories.reduce((a,c) => a + c.items.length, 0);
-    return `<div class="rank-row">
+    return `<div class="rank-row" draggable="true" data-id="${r.id}">
       <div style="font-size:1.3rem">${r.icon}</div>
       <div class="rank-row-name">${r.name}</div>
       <div class="rank-row-count">${total} prérequis</div>
       <div class="rank-row-actions">
+        <button class="btn btn-green" onclick="moveRank(${r.id},-1)">↑ Monter</button>
+        <button class="btn btn-green" onclick="moveRank(${r.id},1)">↓ Descendre</button>
         <button class="btn btn-green" onclick="editRank(${r.id})">Modifier</button>
         <button class="btn btn-red" onclick="openDelModal(${r.id})">Supprimer</button>
       </div>
     </div>`;
   }).join('');
+  enableDragDrop();
 }
 
 function addCat(cat) {
@@ -523,6 +531,22 @@ function saveRank() {
   resetForm();
   switchTab('list', document.querySelectorAll('.tab')[0]);
   showToast('Rang sauvegardé !');
+}
+
+
+function moveRank(id, direction){
+  const index = ranks.findIndex(r => r.id === id);
+  if(index === -1) return;
+
+  const newIndex = index + direction;
+  if(newIndex < 0 || newIndex >= ranks.length) return;
+
+  [ranks[index], ranks[newIndex]] = [ranks[newIndex], ranks[index]];
+
+  saveRanks();
+  renderList();
+  renderPublic();
+  showToast(direction < 0 ? 'Rang déplacé vers le haut.' : 'Rang déplacé vers le bas.');
 }
 
 function editRank(id) {
@@ -627,6 +651,55 @@ function showToast(msg, err) {
 function toggleRank(card){
   card.classList.toggle('open');
 }
+
+
+let draggedRankId = null;
+
+function enableDragDrop(){
+  const rows = document.querySelectorAll('.rank-row');
+
+  rows.forEach(row => {
+    row.addEventListener('dragstart', () => {
+      draggedRankId = Number(row.dataset.id);
+      row.classList.add('dragging');
+    });
+
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      document.querySelectorAll('.rank-row').forEach(r=>r.classList.remove('drag-over'));
+    });
+
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      row.classList.add('drag-over');
+    });
+
+    row.addEventListener('dragleave', () => {
+      row.classList.remove('drag-over');
+    });
+
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      row.classList.remove('drag-over');
+
+      const targetId = Number(row.dataset.id);
+      if(!draggedRankId || draggedRankId === targetId) return;
+
+      const from = ranks.findIndex(r => r.id === draggedRankId);
+      const to = ranks.findIndex(r => r.id === targetId);
+      if(from === -1 || to === -1) return;
+
+      const moved = ranks.splice(from,1)[0];
+      ranks.splice(to,0,moved);
+
+      saveRanks();
+      renderList();
+      renderPublic();
+      showToast('Ordre des rangs mis à jour.');
+    });
+  });
+}
+
 
 loadRanks();
 </script>
