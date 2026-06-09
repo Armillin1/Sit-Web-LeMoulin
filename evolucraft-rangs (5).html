@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rangs — EVOLUCRAFT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0d1117;color:#e8e8e8;font-family:'Nunito',sans-serif;min-height:100vh}
+    nav{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;border-bottom:1px solid #1a1f1a;background:#0f150f}
+    .nav-links{display:flex;gap:2rem}
+    nav a{font-size:0.85rem;color:#7aad6a;text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;font-weight:600;transition:color 0.2s}
+    nav a:hover{color:#1a9e08}
+    .admin-btn{font-size:0.75rem;color:#555;background:none;border:1px solid #1a9e0830;border-radius:6px;padding:0.3rem 0.75rem;cursor:pointer;transition:all 0.2s;font-family:inherit}
+    .admin-btn:hover{color:#2dcc0e;border-color:#1a9e08}
+    .hero{background:linear-gradient(180deg,#0a1f0a 0%,#0d1117 100%);border-bottom:1px solid #1a9e0833;padding:3rem 1.5rem 2.5rem;text-align:center;position:relative;overflow:hidden}
+    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 0%,#1a9e0818 0%,transparent 70%);pointer-events:none}
+    .hero-logo{font-family:'Cinzel',serif;font-size:2.6rem;font-weight:700;color:#1a9e08;letter-spacing:0.08em;text-shadow:0 0 40px #1a9e0860;margin-bottom:0.4rem}
+    .hero-sub{font-size:0.85rem;color:#7aad6a;letter-spacing:0.18em;text-transform:uppercase;margin-bottom:1rem}
+    .hero-desc{font-size:1rem;color:#aaa;max-width:480px;margin:0 auto;line-height:1.7}
+    .main{max-width:820px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
+    .section-title{font-family:'Cinzel',serif;font-size:1rem;color:#1a9e08;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.75rem}
+    .section-title::after{content:'';flex:1;height:1px;background:#1a9e0840}
+    .rank-card{background:#111a11;border:1px solid #1a9e0833;border-radius:12px;overflow:hidden;margin-bottom:1.5rem}
+    .rank-header{background:#0e1f0e;border-bottom:1px solid #1a9e0833;padding:1.25rem 1.5rem;display:flex;align-items:center;gap:1rem}
+    .rank-badge{background:#1a9e0820;border:1px solid #1a9e0866;border-radius:8px;padding:0.5rem 1rem;font-family:'Cinzel',serif;font-size:1.2rem;font-weight:700;color:#2dcc0e;letter-spacing:0.1em}
+    .rank-name{font-family:'Cinzel',serif;font-size:1.35rem;font-weight:700;color:#e8e8e8;letter-spacing:0.06em}
+    .rank-flavor{font-size:0.82rem;color:#7aad6a;margin-top:0.25rem}
+    .rank-body{padding:1.5rem}
+    .cat-header{font-size:0.72rem;color:#1a9e08;text-transform:uppercase;letter-spacing:0.14em;font-weight:700;margin:1.2rem 0 0.65rem;display:flex;align-items:center;gap:0.5rem}
+    .cat-header:first-child{margin-top:0}
+    .cat-header::after{content:'';flex:1;height:1px;background:#1a9e0820}
+    .prereqs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:0.65rem}
+    .prereq-item{display:flex;align-items:center;gap:0.75rem;background:#0d1117;border:1px solid #1f2f1f;border-radius:8px;padding:0.55rem 0.9rem}
+    .prereq-icon{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:#1a9e0812;border:1px solid #1a9e0828}
+    .prereq-name{font-size:0.82rem;color:#ccc;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .prereq-qty{font-size:0.9rem;font-weight:700;color:#2dcc0e;white-space:nowrap;margin-left:auto;flex-shrink:0}
+    .coming-soon{text-align:center;color:#444;font-size:0.82rem;margin-top:1rem;padding:1.5rem;border:1px dashed #1a9e0825;border-radius:10px}
+    .coming-soon span{color:#1a9e08}
+    footer{border-top:1px solid #1a1f1a;padding:2rem 1.5rem;text-align:center;color:#555;font-size:0.8rem}
+    footer span{color:#1a9e08}
+
+    /* ADMIN */
+    #admin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;overflow-y:auto}
+    #admin-overlay.open{display:block}
+    .admin-panel{background:#0d1117;min-height:100vh}
+    .topbar{background:#0e1a0e;border-bottom:1px solid #1a9e0840;padding:0.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
+    .topbar-title{font-size:1rem;font-weight:700;color:#2dcc0e;letter-spacing:0.08em}
+    .topbar-sub{font-size:0.72rem;color:#7aad6a}
+    .tab-bar{display:flex;border-bottom:1px solid #1a9e0825;background:#0f150f;padding:0 1.25rem}
+    .tab{padding:0.7rem 1.1rem;font-size:0.8rem;font-weight:600;color:#666;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;letter-spacing:0.06em;text-transform:uppercase}
+    .tab.active{color:#2dcc0e;border-bottom-color:#2dcc0e}
+    .tab:hover:not(.active){color:#aaa}
+    .a-content{padding:1.25rem;max-width:820px;margin:0 auto}
+    .a-panel{display:none}
+    .a-panel.active{display:block}
+    .ranks-list{display:flex;flex-direction:column;gap:0.75rem}
+    .rank-row{background:#111a11;border:1px solid #1a9e0830;border-radius:10px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem}
+    .rank-row-name{font-weight:700;color:#e8e8e8;font-size:0.95rem;flex:1}
+    .rank-row-count{font-size:0.75rem;color:#7aad6a;background:#1a9e0815;border:1px solid #1a9e0825;border-radius:6px;padding:2px 8px}
+    .rank-row-actions{display:flex;gap:0.5rem}
+    .btn{padding:0.4rem 0.85rem;border-radius:7px;font-size:0.78rem;font-weight:600;cursor:pointer;border:1px solid;transition:all 0.15s;font-family:inherit}
+    .btn-green{background:#1a9e0820;border-color:#1a9e0860;color:#2dcc0e}
+    .btn-green:hover{background:#1a9e0835}
+    .btn-red{background:#cc0e0e15;border-color:#cc0e0e50;color:#ff6b6b}
+    .btn-red:hover{background:#cc0e0e25}
+    .btn-primary{background:#1a9e08;border-color:#1a9e08;color:#fff;padding:0.5rem 1.2rem;font-size:0.85rem;border-radius:8px;font-family:inherit;cursor:pointer}
+    .btn-primary:hover{background:#17870a}
+    .form-card{background:#111a11;border:1px solid #1a9e0830;border-radius:10px;padding:1.25rem}
+    .form-title{font-size:0.9rem;font-weight:700;color:#2dcc0e;margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.1em}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem}
+    .form-group{display:flex;flex-direction:column;gap:0.35rem}
+    .form-group.full{grid-column:1/-1}
+    label{font-size:0.72rem;color:#7aad6a;text-transform:uppercase;letter-spacing:0.1em;font-weight:600}
+    input,select,textarea{background:#0d1117;border:1px solid #1a9e0830;border-radius:7px;color:#e8e8e8;padding:0.5rem 0.75rem;font-size:0.85rem;width:100%;outline:none;font-family:inherit}
+    input:focus,select:focus{border-color:#1a9e08}
+    .items-section{margin-top:1rem}
+    .items-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.6rem}
+    .items-label{font-size:0.72rem;color:#7aad6a;text-transform:uppercase;letter-spacing:0.1em;font-weight:600}
+    .items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.5rem;margin-bottom:0.6rem}
+    .item-row{display:flex;gap:0.5rem;align-items:center;background:#0d1117;border:1px solid #1f2f1f;border-radius:7px;padding:0.4rem 0.6rem}
+    .item-emoji-input{width:36px!important;text-align:center;flex-shrink:0}
+    .item-name-input{flex:1;background:transparent!important;border:none!important;color:#ccc;font-size:0.8rem;padding:0!important;min-width:0}
+    .item-name-input:focus{outline:none;color:#fff}
+    .item-qty-input{width:52px!important;background:transparent!important;border:none!important;color:#2dcc0e;font-weight:700;font-size:0.82rem;padding:0!important;text-align:right}
+    .item-qty-input:focus{outline:none}
+    .item-del{color:#ff6b6b;cursor:pointer;font-size:14px;flex-shrink:0;background:none;border:none;padding:0 2px}
+    .cat-block{margin-bottom:1rem}
+    .cat-title-row{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem}
+    .cat-name-input{background:transparent!important;border:none!important;border-bottom:1px solid #1a9e0840!important;border-radius:0!important;color:#1a9e08;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;padding:2px 4px!important;width:160px!important}
+    .cat-name-input:focus{outline:none;border-bottom-color:#1a9e08!important}
+    .add-cat-btn{font-size:0.75rem;color:#7aad6a;background:#1a9e0812;border:1px dashed #1a9e0840;border-radius:7px;padding:0.45rem 0.85rem;cursor:pointer;width:100%;margin-top:0.5rem;transition:all 0.15s;font-family:inherit}
+    .add-cat-btn:hover{background:#1a9e0820;color:#2dcc0e}
+    .empty-state{text-align:center;padding:2rem;color:#555;font-size:0.85rem;border:1px dashed #1a9e0820;border-radius:10px}
+    .empty-state span{color:#1a9e08}
+    .toast{position:fixed;bottom:20px;right:20px;background:#1a9e08;color:#fff;padding:0.5rem 1rem;border-radius:8px;font-size:0.8rem;font-weight:600;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999}
+    .toast.show{opacity:1}
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;z-index:200}
+    .modal-bg.open{display:flex}
+    .modal{background:#111a11;border:1px solid #1a9e0840;border-radius:12px;padding:1.5rem;width:90%;max-width:400px}
+    .modal-title{font-size:1rem;font-weight:700;color:#2dcc0e;margin-bottom:0.5rem}
+    .modal-sub{font-size:0.82rem;color:#888;margin-bottom:1.25rem;line-height:1.5}
+    .modal-actions{display:flex;gap:0.75rem;justify-content:flex-end}
+    .pwd-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:1rem;padding:2rem;background:#0d1117}
+    .pwd-logo{font-family:'Cinzel',serif;font-size:2rem;font-weight:700;color:#1a9e08;letter-spacing:0.08em;margin-bottom:0.5rem}
+    .pwd-sub{font-size:0.82rem;color:#7aad6a;margin-bottom:1rem}
+    .pwd-input-field{background:#111a11;border:1px solid #1a9e0840;border-radius:8px;color:#e8e8e8;padding:0.65rem 1rem;font-size:0.95rem;width:280px;text-align:center;letter-spacing:0.1em;font-family:inherit}
+    .pwd-input-field:focus{outline:none;border-color:#1a9e08}
+    .pwd-err{font-size:0.78rem;color:#ff6b6b;min-height:1em}
+    @media(max-width:520px){.hero-logo{font-size:1.9rem}.nav-links{gap:1rem}.prereqs-grid{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- SITE PUBLIC -->
+<div id="site-view">
+  <nav>
+    <div class="nav-links">
+      <a href="#">Accueil</a>
+      <a href="#">Rangs</a>
+      <a href="https://discord.gg/CwEmGMYjJf" target="_blank">Discord</a>
+    </div>
+    <button class="admin-btn" onclick="openAdmin()">⚙ Admin</button>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-logo">EVOLUCRAFT</div>
+    <div class="hero-sub">Système d'évolution</div>
+    <p class="hero-desc">Consultez les prérequis nécessaires pour progresser dans les rangs du serveur. Chaque rang débloque de nouvelles possibilités.</p>
+  </div>
+
+  <div class="main">
+    <div class="section-title">Rangs disponibles</div>
+    <div id="public-ranks"></div>
+    <div class="coming-soon" id="coming-soon" style="display:none">
+      <span>D'autres rangs seront ajoutés prochainement.</span><br>
+      Reviens bientôt pour découvrir les prochaines évolutions !
+    </div>
+  </div>
+
+  <footer>
+    <span>EVOLUCRAFT</span> — Un serveur créé et géré par Rivrs. Non affilié à Mojang AB.
+  </footer>
+</div>
+
+<!-- ADMIN OVERLAY -->
+<div id="admin-overlay">
+  <div class="admin-panel">
+
+    <!-- ECRAN MOT DE PASSE -->
+    <div id="pwd-view" class="pwd-screen">
+      <div class="pwd-logo">EVOLUCRAFT</div>
+      <div class="pwd-sub">Panel Administrateur</div>
+      <input class="pwd-input-field" type="password" id="pwd-input" placeholder="Mot de passe" />
+      <button class="btn-primary" onclick="checkPwd()">Accéder</button>
+      <div class="pwd-err" id="pwd-err"></div>
+      <button class="btn btn-red" onclick="closeAdmin()" style="margin-top:0.5rem">Annuler</button>
+    </div>
+
+    <!-- PANEL PRINCIPAL -->
+    <div id="admin-main" style="display:none">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">EVOLUCRAFT — Admin</div>
+          <div class="topbar-sub">Gestion des rangs d'évolution</div>
+        </div>
+        <div style="display:flex;gap:0.75rem">
+          <button class="btn btn-green" onclick="closeAdmin()">← Retour au site</button>
+          <button class="btn btn-red" onclick="logout()">Déconnexion</button>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab active" onclick="switchTab('list',this)">Rangs</div>
+        <div class="tab" onclick="switchTab('create',this)">Créer un rang</div>
+      </div>
+
+      <div class="a-content">
+        <div class="a-panel active" id="tab-list">
+          <div class="ranks-list" id="ranks-list"></div>
+        </div>
+        <div class="a-panel" id="tab-create">
+          <div class="form-card">
+            <div class="form-title" id="form-title">Nouveau rang</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nom du rang</label>
+                <input id="f-name" type="text" placeholder="ex: AGUERRI" />
+              </div>
+              <div class="form-group">
+                <label>Emoji / icône</label>
+                <input id="f-icon" type="text" placeholder="ex: ⚔" />
+              </div>
+            </div>
+            <div class="form-group full" style="margin-bottom:0.75rem">
+              <label>Description</label>
+              <input id="f-desc" type="text" placeholder="ex: Prouve ta valeur pour mériter ce rang" />
+            </div>
+            <div class="form-group full" style="margin-bottom:0.75rem">
+              <label>Image du rang (optionnel)</label>
+              <div style="display:flex;gap:0.75rem;align-items:center">
+                <input id="f-img-url" type="text" placeholder="Colle un lien image (https://...)" style="flex:1" oninput="previewImg()" />
+                <span style="color:#555;font-size:0.75rem">ou</span>
+                <label style="background:#1a9e0820;border:1px solid #1a9e0840;border-radius:7px;padding:0.4rem 0.85rem;cursor:pointer;font-size:0.78rem;color:#2dcc0e;text-transform:none;letter-spacing:0;white-space:nowrap">
+                  📁 Choisir un fichier
+                  <input type="file" accept="image/*" id="f-img-file" style="display:none" onchange="handleImgFile()" />
+                </label>
+              </div>
+              <div id="img-preview" style="margin-top:0.6rem;display:none">
+                <img id="img-preview-el" src="" style="max-height:80px;border-radius:8px;border:1px solid #1a9e0830" />
+                <button onclick="clearImg()" style="background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:0.75rem;margin-left:0.5rem">✕ Supprimer</button>
+              </div>
+            </div>
+            <div class="items-section">
+              <div class="items-header"><span class="items-label">Catégories & Prérequis</span></div>
+              <div id="cats-container"></div>
+              <button class="add-cat-btn" onclick="addCat()">+ Ajouter une catégorie</button>
+            </div>
+            <div style="display:flex;gap:0.75rem;margin-top:1.25rem;justify-content:flex-end">
+              <button class="btn btn-red" onclick="cancelEdit()" id="btn-cancel" style="display:none">Annuler</button>
+              <button class="btn-primary" onclick="saveRank()">Sauvegarder le rang</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUPPRESSION -->
+<div class="modal-bg" id="del-modal">
+  <div class="modal">
+    <div class="modal-title">Supprimer ce rang ?</div>
+    <div class="modal-sub" id="del-modal-sub">Cette action est irréversible.</div>
+    <div class="modal-actions">
+      <button class="btn btn-green" onclick="closeDelModal()">Annuler</button>
+      <button class="btn btn-red" onclick="confirmDelete()">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PASSWORD = 'ArMiLlIn@2011';
+let ranks = [];
+let editingId = null;
+let deleteId = null;
+let catCount = 0;
+let loggedIn = false;
+
+function getDefaultRanks() {
+  return [{
+    id: 1,
+    name: 'AGUERRI',
+    icon: '⚔',
+    desc: 'Prouve ta valeur pour mériter ce rang',
+    categories: [
+      {name:'Économie & Expérience',items:[
+        {emoji:'💰',name:'Argent',qty:'125 000'},
+        {emoji:'✨',name:'Levels XP Vanilla',qty:'20'},
+        {emoji:'🔨',name:'Niveaux de Métiers',qty:'50'}
+      ]},
+      {name:'Bois',items:[
+        {emoji:'🪵',name:'Bûche de Chêne',qty:'×64'},
+        {emoji:'🪵',name:'Bûche de Bouleau',qty:'×64'},
+        {emoji:'🪵',name:'Bûche de Sapin',qty:'×64'}
+      ]},
+      {name:'Minerais & Blocs',items:[
+        {emoji:'⬛',name:'Blocs de Charbon',qty:'×32'},
+        {emoji:'🔩',name:'Blocs de Fer',qty:'×16'},
+        {emoji:'🔴',name:'Poudre de Redstone',qty:'×64'},
+        {emoji:'🪨',name:'Basalte',qty:'×32'}
+      ]},
+      {name:'Récoltes',items:[
+        {emoji:'🥔',name:'Pomme de terre',qty:'×64'},
+        {emoji:'🥕',name:'Carotte',qty:'×64'},
+        {emoji:'🫚',name:'Betterave',qty:'×64'}
+      ]},
+      {name:'Poissons',items:[
+        {emoji:'🐟',name:'Morue crue',qty:'×64'},
+        {emoji:'🐠',name:'Saumon cru',qty:'×32'},
+        {emoji:'🐡',name:'Poisson-globe',qty:'×16'}
+      ]},
+      {name:'Drops de monstres',items:[
+        {emoji:'🧟',name:'Chair putréfiée',qty:'×64'},
+        {emoji:'🦴',name:'Os',qty:'×32'},
+        {emoji:'🕷️',name:"Œil d'araignée",qty:'×16'},
+        {emoji:'💎',name:'Cristal de Donjon',qty:'×16'}
+      ]}
+    ]
+  },{
+    id: 2,
+    name: 'TALENTUEUX',
+    icon: '🌟',
+    desc: 'Démontre ton talent pour accéder à ce rang',
+    img: '',
+    categories: [
+      {name:'Économie & Expérience',items:[
+        {emoji:'💰',name:'Argent',qty:'1 250 000'},
+        {emoji:'✨',name:'Levels XP Vanilla',qty:'55'},
+        {emoji:'🔨',name:'Niveaux de Métiers',qty:'200'}
+      ]},
+      {name:'Bois',items:[
+        {emoji:'🪵',name:'Bûche de Chêne',qty:'×64'},
+        {emoji:'🪵',name:'Bûche de Bouleau',qty:'×64'},
+        {emoji:'🪵',name:'Bûche de Sapin',qty:'×64'},
+        {emoji:'🪵',name:"Bûche d'Acajou",qty:'×64'},
+        {emoji:'🪵',name:'Bûche de Chêne Noir',qty:'×64'},
+        {emoji:'🪵',name:"Bûche d'Acacia",qty:'×64'}
+      ]},
+      {name:'Minerais & Blocs',items:[
+        {emoji:'⬛',name:'Blocs de Charbon',qty:'×256'},
+        {emoji:'🔩',name:'Blocs de Fer',qty:'×128'},
+        {emoji:'🔴',name:'Blocs de Redstone',qty:'×64'},
+        {emoji:'🪨',name:'Blocs de Quartz',qty:'×32'},
+        {emoji:'🔵',name:'Blocs de Lapis',qty:'×16'},
+        {emoji:'🟡',name:"Lingots d'Or",qty:'×64'},
+        {emoji:'✨',name:'Roches Noir Dorée',qty:'×64'}
+      ]},
+      {name:'Récoltes',items:[
+        {emoji:'🍎',name:'Pommes',qty:'×64'},
+        {emoji:'🍯',name:'Fioles de Miel',qty:'×32'},
+        {emoji:'🍫',name:'Fèves de Cacao',qty:'×64'}
+      ]},
+      {name:'Poissons',items:[
+        {emoji:'🐟',name:'Thons',qty:'×64'},
+        {emoji:'🐟',name:'Truites',qty:'×64'},
+        {emoji:'🐟',name:'Carpes',qty:'×64'},
+        {emoji:'🐠',name:'Dorades',qty:'×32'},
+        {emoji:'🐠',name:'Dorées Jaunes',qty:'×32'},
+        {emoji:'🐠',name:'Flétans',qty:'×32'},
+        {emoji:'🐡',name:'Tambours Noirs',qty:'×16'},
+        {emoji:'🐡',name:'Poissons Anges',qty:'×16'},
+        {emoji:'🐡',name:'Truites Arc-en-Ciel',qty:'×8'}
+      ]},
+      {name:'Drops de monstres',items:[
+        {emoji:'💥',name:'Poudre de Creeper',qty:'×64'},
+        {emoji:'🟢',name:'Ender Pearles',qty:'×32'},
+        {emoji:'🔥',name:'Bâtons de Blaze',qty:'×16'},
+        {emoji:'💎',name:'Cristaux DJ Rare',qty:'×32'}
+      ]}
+    ]
+  }];
+}
+
+function loadRanks() {
+  try {
+    const saved = localStorage.getItem('evolucraft-ranks');
+    ranks = saved ? JSON.parse(saved) : getDefaultRanks();
+  } catch(e) { ranks = getDefaultRanks(); }
+  renderPublic();
+}
+
+function saveRanks() {
+  try { localStorage.setItem('evolucraft-ranks', JSON.stringify(ranks)); } catch(e) {}
+}
+
+function renderPublic() {
+  const el = document.getElementById('public-ranks');
+  const cs = document.getElementById('coming-soon');
+  if (!ranks.length) { el.innerHTML = ''; cs.style.display = 'block'; return; }
+  cs.style.display = 'block';
+  el.innerHTML = ranks.map(r => `
+    <div class="rank-card">
+      ${r.img ? `<div style="width:100%;height:160px;overflow:hidden;border-bottom:1px solid #1a9e0833"><img src="${r.img}" style="width:100%;height:100%;object-fit:cover;object-position:center" /></div>` : ''}
+      <div class="rank-header">
+        <div class="rank-badge">${r.icon}</div>
+        <div>
+          <div class="rank-name">${r.name}</div>
+          <div class="rank-flavor">${r.desc}</div>
+        </div>
+      </div>
+      <div class="rank-body">
+        ${r.categories.map(cat => `
+          <div class="cat-header">${cat.name}</div>
+          <div class="prereqs-grid">
+            ${cat.items.map(item => `
+              <div class="prereq-item">
+                <div class="prereq-icon">${item.emoji}</div>
+                <div class="prereq-name">${item.name}</div>
+                <div class="prereq-qty">${item.qty}</div>
+              </div>`).join('')}
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function openAdmin() {
+  document.getElementById('admin-overlay').classList.add('open');
+  if (loggedIn) {
+    document.getElementById('pwd-view').style.display = 'none';
+    document.getElementById('admin-main').style.display = 'block';
+    renderList();
+  }
+}
+
+function closeAdmin() {
+  document.getElementById('admin-overlay').classList.remove('open');
+}
+
+function checkPwd() {
+  const val = document.getElementById('pwd-input').value;
+  if (val === PASSWORD) {
+    loggedIn = true;
+    document.getElementById('pwd-view').style.display = 'none';
+    document.getElementById('admin-main').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+    renderList();
+  } else {
+    document.getElementById('pwd-err').textContent = 'Mot de passe incorrect.';
+  }
+}
+
+document.getElementById('pwd-input').addEventListener('keydown', e => { if(e.key==='Enter') checkPwd(); });
+
+function logout() {
+  loggedIn = false;
+  document.getElementById('pwd-view').style.display = 'flex';
+  document.getElementById('admin-main').style.display = 'none';
+  document.getElementById('pwd-input').value = '';
+  document.getElementById('pwd-err').textContent = '';
+}
+
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.a-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function renderList() {
+  const el = document.getElementById('ranks-list');
+  if (!ranks.length) { el.innerHTML = '<div class="empty-state"><span>Aucun rang créé.</span><br>Rendez-vous dans l\'onglet "Créer un rang".</div>'; return; }
+  el.innerHTML = ranks.map(r => {
+    const total = r.categories.reduce((a,c) => a + c.items.length, 0);
+    return `<div class="rank-row">
+      <div style="font-size:1.3rem">${r.icon}</div>
+      <div class="rank-row-name">${r.name}</div>
+      <div class="rank-row-count">${total} prérequis</div>
+      <div class="rank-row-actions">
+        <button class="btn btn-green" onclick="editRank(${r.id})">Modifier</button>
+        <button class="btn btn-red" onclick="openDelModal(${r.id})">Supprimer</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addCat(cat) {
+  const id = catCount++;
+  const container = document.getElementById('cats-container');
+  const div = document.createElement('div');
+  div.className = 'cat-block';
+  div.id = 'cat-' + id;
+  div.innerHTML = `
+    <div class="cat-title-row">
+      <input class="cat-name-input" type="text" placeholder="Nom catégorie" value="${cat ? cat.name : ''}" id="cat-name-${id}" />
+      <button class="btn btn-green" onclick="addItem(${id})" style="font-size:0.72rem;padding:2px 8px">+ Item</button>
+      <button class="btn btn-red" onclick="document.getElementById('cat-${id}').remove()" style="font-size:0.72rem;padding:2px 8px">✕ Catégorie</button>
+    </div>
+    <div class="items-grid" id="items-${id}"></div>`;
+  container.appendChild(div);
+  if (cat) cat.items.forEach(item => addItem(id, item));
+}
+
+function addItem(catId, item) {
+  const grid = document.getElementById('items-' + catId);
+  if (!grid) return;
+  const d = document.createElement('div');
+  d.className = 'item-row';
+  d.innerHTML = `
+    <input class="item-emoji-input" type="text" value="${item ? item.emoji : '📦'}" />
+    <input class="item-name-input" type="text" placeholder="Nom de l'item" value="${item ? item.name : ''}" />
+    <input class="item-qty-input" type="text" placeholder="qté" value="${item ? item.qty : '×64'}" />
+    <button class="item-del" onclick="this.parentElement.remove()">✕</button>`;
+  grid.appendChild(d);
+}
+
+function getCatsData() {
+  const cats = [];
+  document.querySelectorAll('.cat-block').forEach(block => {
+    const id = block.id.replace('cat-','');
+    const name = document.getElementById('cat-name-'+id).value.trim();
+    const items = [];
+    block.querySelectorAll('.items-grid .item-row').forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      items.push({emoji:inputs[0].value.trim(), name:inputs[1].value.trim(), qty:inputs[2].value.trim()});
+    });
+    if (name) cats.push({name, items});
+  });
+  return cats;
+}
+
+function saveRank() {
+  const name = document.getElementById('f-name').value.trim().toUpperCase();
+  const icon = document.getElementById('f-icon').value.trim();
+  const desc = document.getElementById('f-desc').value.trim();
+  const img = document.getElementById('img-preview-el').src && document.getElementById('img-preview').style.display !== 'none' ? document.getElementById('img-preview-el').src : '';
+  if (!name) { showToast('Nom requis !', true); return; }
+  const categories = getCatsData();
+  if (editingId) {
+    const idx = ranks.findIndex(r => r.id === editingId);
+    if (idx !== -1) ranks[idx] = {id:editingId, name, icon, desc, img, categories};
+    editingId = null;
+  } else {
+    ranks.push({id:Date.now(), name, icon, desc, img, categories});
+  }
+  saveRanks();
+  renderList();
+  renderPublic();
+  resetForm();
+  switchTab('list', document.querySelectorAll('.tab')[0]);
+  showToast('Rang sauvegardé !');
+}
+
+function editRank(id) {
+  const rank = ranks.find(r => r.id === id);
+  if (!rank) return;
+  editingId = id;
+  document.getElementById('f-name').value = rank.name;
+  document.getElementById('f-icon').value = rank.icon;
+  document.getElementById('f-desc').value = rank.desc;
+  document.getElementById('f-img-url').value = rank.img || '';
+  if (rank.img) {
+    document.getElementById('img-preview-el').src = rank.img;
+    document.getElementById('img-preview').style.display = 'block';
+  } else {
+    document.getElementById('img-preview').style.display = 'none';
+  }
+  document.getElementById('form-title').textContent = 'Modifier : ' + rank.name;
+  document.getElementById('btn-cancel').style.display = 'inline-block';
+  document.getElementById('cats-container').innerHTML = '';
+  catCount = 0;
+  rank.categories.forEach(cat => addCat(cat));
+  switchTab('create', document.querySelectorAll('.tab')[1]);
+}
+
+function cancelEdit() {
+  editingId = null;
+  resetForm();
+  switchTab('list', document.querySelectorAll('.tab')[0]);
+}
+
+function resetForm() {
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-icon').value = '';
+  document.getElementById('f-desc').value = '';
+  document.getElementById('f-img-url').value = '';
+  clearImg();
+  document.getElementById('form-title').textContent = 'Nouveau rang';
+  document.getElementById('btn-cancel').style.display = 'none';
+  document.getElementById('cats-container').innerHTML = '';
+  catCount = 0;
+}
+
+function previewImg() {
+  const url = document.getElementById('f-img-url').value.trim();
+  if (url) {
+    document.getElementById('img-preview-el').src = url;
+    document.getElementById('img-preview').style.display = 'block';
+  } else {
+    document.getElementById('img-preview').style.display = 'none';
+  }
+}
+
+function handleImgFile() {
+  const file = document.getElementById('f-img-file').files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('img-preview-el').src = e.target.result;
+    document.getElementById('f-img-url').value = '';
+    document.getElementById('img-preview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImg() {
+  document.getElementById('img-preview-el').src = '';
+  document.getElementById('f-img-url').value = '';
+  document.getElementById('f-img-file').value = '';
+  document.getElementById('img-preview').style.display = 'none';
+}
+
+function openDelModal(id) {
+  deleteId = id;
+  const rank = ranks.find(r => r.id === id);
+  document.getElementById('del-modal-sub').textContent = 'Supprimer le rang "' + (rank ? rank.name : '') + '" ? Cette action est irréversible.';
+  document.getElementById('del-modal').classList.add('open');
+}
+
+function closeDelModal() {
+  document.getElementById('del-modal').classList.remove('open');
+  deleteId = null;
+}
+
+function confirmDelete() {
+  ranks = ranks.filter(r => r.id !== deleteId);
+  saveRanks();
+  renderList();
+  renderPublic();
+  closeDelModal();
+  showToast('Rang supprimé.');
+}
+
+function showToast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#cc3333' : '#1a9e08';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+loadRanks();
+</script>
+</body>
+</html>
